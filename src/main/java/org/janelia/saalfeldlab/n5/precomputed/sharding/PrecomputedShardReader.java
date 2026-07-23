@@ -3,30 +3,33 @@ package org.janelia.saalfeldlab.n5.precomputed.sharding;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.zip.GZIPInputStream;
 
-import org.janelia.saalfeldlab.n5.DataBlock;
 import org.janelia.saalfeldlab.n5.KeyValueAccess;
+import org.janelia.saalfeldlab.n5.LockedChannel;
 import org.janelia.saalfeldlab.n5.N5Exception;
 import org.janelia.saalfeldlab.n5.N5Exception.N5IOException;
-import org.janelia.saalfeldlab.n5.codec.BlockCodec;
 import org.janelia.saalfeldlab.n5.precomputed.PrecomputedDatasetAttributes;
 import org.janelia.saalfeldlab.n5.precomputed.PrecomputedInfo.Sharding;
-import org.janelia.saalfeldlab.n5.readdata.ReadData;
-import org.janelia.saalfeldlab.n5.readdata.VolatileReadData;
 
 /**
  * Reads chunks from a Neuroglancer precomputed <em>sharded</em> scale.
  * <p>
- * Given a chunk grid position, this computes the compressed Morton code, maps
- * it to a shard + minishard using the {@link Sharding} parameters, then uses
- * byte-range reads on the shard file (via {@link ReadData#slice}) to read the
- * shard index entry, the minishard index, and finally the chunk bytes — so a
- * single chunk read does not download the whole shard from a cloud backend.
- * The chunk bytes are then decoded with the scale's encoding block codec.
+ * Given a chunk grid position, this computes the compressed Morton code, maps it
+ * to a shard + minishard using the {@link Sharding} parameters, then reads the
+ * shard index entry, the minishard index, and finally the chunk bytes from the
+ * shard file, returning the (data_encoding-decoded) chunk bytes — or {@code null}
+ * if the chunk is absent. The caller decodes those bytes per the scale encoding.
+ * <p>
+ * n5&nbsp;3.x has no range-read primitive ({@code ReadData.slice}), so byte
+ * ranges are read by opening the shard's {@link InputStream} and discarding the
+ * leading {@code offset} bytes. This is correct but not bandwidth-optimal on
+ * cloud backends (the leading bytes are still transferred); the n5-4.x branch
+ * uses true range reads.
  *
  * @author Stephan Preibisch
  */
@@ -34,7 +37,11 @@ public class PrecomputedShardReader {
 
 	private PrecomputedShardReader() {}
 
-	public static <T> DataBlock<T> readBlock(
+	/**
+	 * @return the chunk's (data_encoding-decoded) bytes, or {@code null} if the
+	 *         chunk is not present in the shard
+	 */
+	public static byte[] readChunkBytes(
 			final KeyValueAccess kva,
 			final URI uri,
 			final String normalPath,
@@ -98,10 +105,7 @@ public class PrecomputedShardReader {
 		}
 
 		final byte[] chunkRaw = readRange(kva, shardPath, shardIndexEnd + chunkOffset, chunkSize);
-		final byte[] chunkBytes = decode(chunkRaw, sh.dataEncoding);
-
-		final BlockCodec<T> codec = attrs.getBlockCodecInfo().create(attrs.getDataType(), attrs.getBlockSize());
-		return codec.decode(ReadData.from(chunkBytes), gridPosition);
+		return decode(chunkRaw, sh.dataEncoding);
 	}
 
 	private static long hash(final String hash, final long value) {
@@ -133,9 +137,38 @@ public class PrecomputedShardReader {
 	private static byte[] readRange(final KeyValueAccess kva, final String path, final long offset, final long length)
 			throws N5IOException {
 
-		try (final VolatileReadData rd = kva.createReadData(path)) {
-			return rd.slice(offset, length).allBytes();
+		try (final LockedChannel ch = kva.lockForReading(path);
+				final InputStream in = ch.newInputStream()) {
+			skipFully(in, offset);
+			return readFully(in, (int)length);
+		} catch (final IOException e) {
+			throw new N5IOException("failed to read range from " + path, e);
 		}
+	}
+
+	private static void skipFully(final InputStream in, final long n) throws IOException {
+
+		final byte[] buf = new byte[8192];
+		long remaining = n;
+		while (remaining > 0) {
+			final int r = in.read(buf, 0, (int)Math.min(buf.length, remaining));
+			if (r < 0)
+				throw new IOException("unexpected EOF while skipping to offset");
+			remaining -= r;
+		}
+	}
+
+	private static byte[] readFully(final InputStream in, final int length) throws IOException {
+
+		final byte[] out = new byte[length];
+		int off = 0;
+		while (off < length) {
+			final int r = in.read(out, off, length - off);
+			if (r < 0)
+				throw new IOException("unexpected EOF: wanted " + length + " bytes, got " + off);
+			off += r;
+		}
+		return out;
 	}
 
 	private static ByteBuffer le(final byte[] bytes) {

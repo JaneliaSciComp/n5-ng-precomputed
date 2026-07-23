@@ -8,7 +8,6 @@ import org.janelia.saalfeldlab.n5.DataBlock;
 import org.janelia.saalfeldlab.n5.DataType;
 import org.janelia.saalfeldlab.n5.N5Exception.N5IOException;
 import org.janelia.saalfeldlab.n5.ShortArrayDataBlock;
-import org.janelia.saalfeldlab.n5.readdata.ReadData;
 
 /**
  * Decodes a PNG-encoded precomputed chunk.
@@ -29,7 +28,7 @@ public class PngChunkDecoder {
 	private PngChunkDecoder() {}
 
 	public static DataBlock<?> decode(
-			final ReadData readData,
+			final byte[] bytes,
 			final DataType dataType,
 			final int[] blockSize,
 			final int numChannels,
@@ -38,7 +37,7 @@ public class PngChunkDecoder {
 		if (numChannels < 1 || numChannels > 4)
 			throw new N5IOException("png encoding only supports 1-4 channels, not " + numChannels);
 
-		final BufferedImage img = JpegChunkDecoder.read(readData);
+		final BufferedImage img = JpegChunkDecoder.read(bytes);
 		final int width = img.getWidth();
 		final int spatial = blockSize[0] * blockSize[1] * blockSize[2];
 

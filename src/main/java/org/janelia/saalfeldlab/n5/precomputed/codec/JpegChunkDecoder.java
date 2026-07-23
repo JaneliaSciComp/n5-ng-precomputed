@@ -11,7 +11,6 @@ import org.janelia.saalfeldlab.n5.ByteArrayDataBlock;
 import org.janelia.saalfeldlab.n5.DataBlock;
 import org.janelia.saalfeldlab.n5.DataType;
 import org.janelia.saalfeldlab.n5.N5Exception.N5IOException;
-import org.janelia.saalfeldlab.n5.readdata.ReadData;
 
 /**
  * Decodes a JPEG-encoded precomputed chunk.
@@ -29,7 +28,7 @@ public class JpegChunkDecoder {
 	private JpegChunkDecoder() {}
 
 	public static DataBlock<byte[]> decode(
-			final ReadData readData,
+			final byte[] bytes,
 			final DataType dataType,
 			final int[] blockSize,
 			final int numChannels,
@@ -40,7 +39,7 @@ public class JpegChunkDecoder {
 		if (numChannels != 1 && numChannels != 3)
 			throw new N5IOException("jpeg encoding only supports 1 or 3 channels, not " + numChannels);
 
-		final BufferedImage img = read(readData);
+		final BufferedImage img = read(bytes);
 		final int width = img.getWidth();
 		final int spatial = blockSize[0] * blockSize[1] * blockSize[2];
 
@@ -60,10 +59,10 @@ public class JpegChunkDecoder {
 		return new ByteArrayDataBlock(blockSize, gridPosition, data);
 	}
 
-	static BufferedImage read(final ReadData readData) throws N5IOException {
+	static BufferedImage read(final byte[] bytes) throws N5IOException {
 
 		try {
-			final BufferedImage img = ImageIO.read(new ByteArrayInputStream(readData.allBytes()));
+			final BufferedImage img = ImageIO.read(new ByteArrayInputStream(bytes));
 			if (img == null)
 				throw new N5IOException("could not decode image chunk (no suitable ImageIO reader)");
 			return img;

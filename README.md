@@ -4,6 +4,16 @@ Read [Neuroglancer precomputed](https://neuroglancer-docs.web.app/datasource/pre
 **volumes** through the [N5 API](https://github.com/saalfeldlab/n5) — locally or from any
 cloud backend N5 supports (AWS S3, Google Cloud Storage, …).
 
+> **Branch note (`n5-3.3.5`):** this branch targets the older **n5 3.3.x**
+> (`pom-scijava` 39, 2024). n5 3.3.5 was never released, so it pins **n5 3.3.1**.
+> n5 3.x has no block-codec pipeline, so chunk decoding is done directly in the
+> reader (see `codec/PrecomputedChunkDecoder`) and sharded byte-ranges are read via
+> `LockedChannel` (no true range reads — leading bytes are transferred and
+> discarded). All local unit tests pass. Caveat: the cloud examples cannot open a
+> **public** GCS bucket anonymously here, because `n5-google-cloud` 4.1.1 verifies
+> the bucket (`buckets.get`) on construction; use credentials, or the `master`
+> (n5 4.x) branch for anonymous public access.
+
 **_Claude_** built this as a read-only counterpart to [n5-zarr](https://github.com/saalfeldlab/n5-zarr),
 and closely modeled on it: the precomputed on-disk format is plugged into the same
 `N5Reader` abstraction via a `KeyValueAccess`-based `PrecomputedKeyValueReader` (plus a

@@ -3,6 +3,7 @@ package org.janelia.saalfeldlab.n5.precomputed;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -12,15 +13,15 @@ import java.util.zip.GZIPInputStream;
 import org.janelia.saalfeldlab.n5.CachedGsonKeyValueN5Reader;
 import org.janelia.saalfeldlab.n5.DataBlock;
 import org.janelia.saalfeldlab.n5.DatasetAttributes;
-import org.janelia.saalfeldlab.n5.GsonKeyValueN5Reader;
 import org.janelia.saalfeldlab.n5.GsonUtils;
 import org.janelia.saalfeldlab.n5.KeyValueAccess;
+import org.janelia.saalfeldlab.n5.LockedChannel;
 import org.janelia.saalfeldlab.n5.N5Exception;
 import org.janelia.saalfeldlab.n5.N5URI;
 import org.janelia.saalfeldlab.n5.cache.N5JsonCache;
 import org.janelia.saalfeldlab.n5.cache.N5JsonCacheableContainer;
+import org.janelia.saalfeldlab.n5.precomputed.codec.PrecomputedChunkDecoder;
 import org.janelia.saalfeldlab.n5.precomputed.sharding.PrecomputedShardReader;
-import org.janelia.saalfeldlab.n5.readdata.VolatileReadData;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -40,9 +41,10 @@ import com.google.gson.JsonSyntaxException;
  * {@code info} JSON;</li>
  * <li>each {@code scales[].key} as an N5 dataset ({@code [x, y, z, channel]}).</li>
  * </ul>
- * Unsharded chunk reads use the inherited {@link GsonKeyValueN5Reader} block
- * pipeline (via {@link PrecomputedDatasetAttributes#relativeBlockPath}); sharded
- * scales are routed to {@link PrecomputedShardReader}.
+ * n5&nbsp;3.x has no block-codec pipeline, so chunk reads are handled directly:
+ * the raw chunk bytes are read via {@link KeyValueAccess} (unsharded chunk file,
+ * or {@link PrecomputedShardReader} for sharded scales) and decoded by
+ * {@link PrecomputedChunkDecoder}.
  *
  * @author Stephan Preibisch
  */
@@ -121,16 +123,19 @@ public class PrecomputedKeyValueReader implements CachedGsonKeyValueN5Reader, N5
 				info = null;
 				infoJson = null;
 			} else {
-				try (final VolatileReadData rd = keyValueAccess.createReadData(infoPath)) {
+				try (final LockedChannel ch = keyValueAccess.lockForReading(infoPath);
+						final InputStream in = ch.newInputStream()) {
 					// Some backends (e.g. GCS with Content-Encoding: gzip) return the
-					// info gzip-compressed on ranged/channel reads; decompress if so.
-					final String json = new String(maybeGunzip(rd.allBytes()), StandardCharsets.UTF_8);
+					// info gzip-compressed; decompress if so.
+					final String json = new String(maybeGunzip(readAll(in)), StandardCharsets.UTF_8);
 					final JsonElement el = gson.fromJson(json, JsonElement.class);
 					infoJson = el != null && el.isJsonObject() ? el.getAsJsonObject() : null;
 					info = gson.fromJson(el, PrecomputedInfo.class);
 				} catch (final N5Exception.N5NoSuchKeyException e) {
 					info = null;
 					infoJson = null;
+				} catch (final IOException e) {
+					throw new N5Exception.N5IOException("failed to read info at " + infoPath, e);
 				}
 			}
 			infoLoaded = true;
@@ -246,33 +251,53 @@ public class PrecomputedKeyValueReader implements CachedGsonKeyValueN5Reader, N5
 	// -- block reading --------------------------------------------------------
 
 	@Override
-	public <T> DataBlock<T> readBlock(
+	public DataBlock<?> readBlock(
 			final String pathName,
 			final DatasetAttributes datasetAttributes,
 			final long... gridPosition) throws N5Exception {
 
-		final DatasetAttributes converted = getConvertedDatasetAttributes(datasetAttributes);
-		if (converted instanceof PrecomputedDatasetAttributes
-				&& ((PrecomputedDatasetAttributes)converted).isShardedPrecomputed()) {
-			return PrecomputedShardReader.readBlock(keyValueAccess, uri,
-					N5URI.normalizeGroupPath(pathName), (PrecomputedDatasetAttributes)converted, gridPosition);
+		if (!(datasetAttributes instanceof PrecomputedDatasetAttributes))
+			return null;
+		final PrecomputedDatasetAttributes attrs = (PrecomputedDatasetAttributes)datasetAttributes;
+		final String normalPath = N5URI.normalizeGroupPath(pathName);
+
+		final byte[] chunkBytes;
+		if (attrs.isShardedPrecomputed()) {
+			chunkBytes = PrecomputedShardReader.readChunkBytes(keyValueAccess, uri, normalPath, attrs, gridPosition);
+		} else {
+			final String blockPath = keyValueAccess.compose(uri, normalPath, attrs.chunkKey(gridPosition));
+			if (!keyValueAccess.isFile(blockPath))
+				return null;
+			chunkBytes = readAll(blockPath);
 		}
-		return CachedGsonKeyValueN5Reader.super.readBlock(pathName, datasetAttributes, gridPosition);
+		if (chunkBytes == null)
+			return null;
+
+		return PrecomputedChunkDecoder.decode(
+				attrs.getEncoding(), attrs.getDataType(), attrs.clampedBlockSize(gridPosition),
+				attrs.getNumChannels(), attrs.getCompressedSegmentationBlockSize(), gridPosition, chunkBytes);
 	}
 
-	@Override
-	public <T> DataBlock<T> readChunk(
-			final String pathName,
-			final DatasetAttributes datasetAttributes,
-			final long... gridPosition) throws N5Exception {
+	private byte[] readAll(final String path) {
 
-		final DatasetAttributes converted = getConvertedDatasetAttributes(datasetAttributes);
-		if (converted instanceof PrecomputedDatasetAttributes
-				&& ((PrecomputedDatasetAttributes)converted).isShardedPrecomputed()) {
-			return PrecomputedShardReader.readBlock(keyValueAccess, uri,
-					N5URI.normalizeGroupPath(pathName), (PrecomputedDatasetAttributes)converted, gridPosition);
+		try (final LockedChannel ch = keyValueAccess.lockForReading(path);
+				final InputStream in = ch.newInputStream()) {
+			return readAll(in);
+		} catch (final N5Exception.N5NoSuchKeyException e) {
+			return null;
+		} catch (final IOException e) {
+			throw new N5Exception.N5IOException("failed to read block " + path, e);
 		}
-		return CachedGsonKeyValueN5Reader.super.readChunk(pathName, datasetAttributes, gridPosition);
+	}
+
+	private static byte[] readAll(final InputStream in) throws IOException {
+
+		final ByteArrayOutputStream out = new ByteArrayOutputStream(64 * 1024);
+		final byte[] buf = new byte[8192];
+		int r;
+		while ((r = in.read(buf)) > 0)
+			out.write(buf, 0, r);
+		return out.toByteArray();
 	}
 
 	// -- accessors ------------------------------------------------------------
@@ -296,12 +321,6 @@ public class PrecomputedKeyValueReader implements CachedGsonKeyValueN5Reader, N5
 	}
 
 	@Override
-	public String getAttributesKey() {
-
-		return INFO_FILE;
-	}
-
-	@Override
 	public DatasetAttributes createDatasetAttributes(final JsonElement attributes) {
 
 		// precomputed dataset attributes require the info + scale context;
@@ -319,12 +338,6 @@ public class PrecomputedKeyValueReader implements CachedGsonKeyValueN5Reader, N5
 
 	@Override
 	public N5JsonCache getCache() {
-
-		return null;
-	}
-
-	@Override
-	public N5JsonCache newCache() {
 
 		return null;
 	}

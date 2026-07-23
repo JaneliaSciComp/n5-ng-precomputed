@@ -1,5 +1,7 @@
 package org.janelia.saalfeldlab.n5.precomputed;
 
+import java.nio.file.FileSystems;
+
 import org.janelia.saalfeldlab.n5.FileSystemKeyValueAccess;
 import org.janelia.saalfeldlab.n5.N5Exception;
 
@@ -26,7 +28,7 @@ public class N5PrecomputedReader extends PrecomputedKeyValueReader {
 	 */
 	public N5PrecomputedReader(final String basePath, final GsonBuilder gsonBuilder, final boolean cacheMeta) throws N5Exception {
 
-		super(new FileSystemKeyValueAccess(), basePath, gsonBuilder, cacheMeta);
+		super(new FileSystemKeyValueAccess(FileSystems.getDefault()), basePath, gsonBuilder, cacheMeta);
 	}
 
 	/**

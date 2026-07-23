@@ -8,7 +8,6 @@ import org.janelia.saalfeldlab.n5.DataType;
 import org.janelia.saalfeldlab.n5.IntArrayDataBlock;
 import org.janelia.saalfeldlab.n5.LongArrayDataBlock;
 import org.janelia.saalfeldlab.n5.N5Exception.N5IOException;
-import org.janelia.saalfeldlab.n5.readdata.ReadData;
 
 /**
  * Decodes a Neuroglancer {@code compressed_segmentation} chunk (uint32/uint64).
@@ -26,7 +25,7 @@ public class CompressedSegmentationDecoder {
 	private CompressedSegmentationDecoder() {}
 
 	public static DataBlock<?> decode(
-			final ReadData readData,
+			final byte[] bytes,
 			final DataType dataType,
 			final int[] blockSize,       // clamped [x, y, z, channel]
 			final int numChannels,
@@ -36,7 +35,7 @@ public class CompressedSegmentationDecoder {
 		if (compressedSegmentationBlockSize == null)
 			throw new N5IOException("compressed_segmentation requires compressed_segmentation_block_size");
 
-		final int[] data = toUint32LE(readData.allBytes());
+		final int[] data = toUint32LE(bytes);
 		final int[] chunkDataSize = {blockSize[0], blockSize[1], blockSize[2]};
 		final int channelLen = chunkDataSize[0] * chunkDataSize[1] * chunkDataSize[2];
 
