@@ -1,4 +1,4 @@
-package org.janelia.saalfeldlab.n5.precomputed;
+package org.janelia.scicomp.n5.precomputed;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -41,7 +41,7 @@ import net.imglib2.view.Views;
  * Run interactively:
  * <pre>
  * mvn test-compile exec:java -Dexec.classpathScope=test \
- *   -Dexec.mainClass=org.janelia.saalfeldlab.n5.precomputed.HemibrainPrecomputed
+ *   -Dexec.mainClass=org.janelia.scicomp.n5.precomputed.HemibrainPrecomputed
  * </pre>
  *
  * @author Stephan Preibisch

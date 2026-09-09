@@ -1,10 +1,10 @@
-package org.janelia.saalfeldlab.n5.precomputed;
+package org.janelia.scicomp.n5.precomputed;
 
 import org.janelia.saalfeldlab.n5.DataType;
 import org.janelia.saalfeldlab.n5.DatasetAttributes;
-import org.janelia.saalfeldlab.n5.precomputed.PrecomputedInfo.Scale;
-import org.janelia.saalfeldlab.n5.precomputed.PrecomputedInfo.Sharding;
-import org.janelia.saalfeldlab.n5.precomputed.codec.PrecomputedBlockCodecInfo;
+import org.janelia.scicomp.n5.precomputed.PrecomputedInfo.Scale;
+import org.janelia.scicomp.n5.precomputed.PrecomputedInfo.Sharding;
+import org.janelia.scicomp.n5.precomputed.codec.PrecomputedBlockCodecInfo;
 
 /**
  * {@link DatasetAttributes} for a single Neuroglancer precomputed scale.

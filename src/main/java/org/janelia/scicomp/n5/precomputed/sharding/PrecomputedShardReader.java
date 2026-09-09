@@ -1,4 +1,4 @@
-package org.janelia.saalfeldlab.n5.precomputed.sharding;
+package org.janelia.scicomp.n5.precomputed.sharding;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,8 +13,8 @@ import org.janelia.saalfeldlab.n5.KeyValueAccess;
 import org.janelia.saalfeldlab.n5.N5Exception;
 import org.janelia.saalfeldlab.n5.N5Exception.N5IOException;
 import org.janelia.saalfeldlab.n5.codec.BlockCodec;
-import org.janelia.saalfeldlab.n5.precomputed.PrecomputedDatasetAttributes;
-import org.janelia.saalfeldlab.n5.precomputed.PrecomputedInfo.Sharding;
+import org.janelia.scicomp.n5.precomputed.PrecomputedDatasetAttributes;
+import org.janelia.scicomp.n5.precomputed.PrecomputedInfo.Sharding;
 import org.janelia.saalfeldlab.n5.readdata.ReadData;
 import org.janelia.saalfeldlab.n5.readdata.VolatileReadData;
 

@@ -1,4 +1,4 @@
-package org.janelia.saalfeldlab.n5.precomputed;
+package org.janelia.scicomp.n5.precomputed;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,7 +19,7 @@ import org.janelia.saalfeldlab.n5.N5Exception;
 import org.janelia.saalfeldlab.n5.N5URI;
 import org.janelia.saalfeldlab.n5.cache.N5JsonCache;
 import org.janelia.saalfeldlab.n5.cache.N5JsonCacheableContainer;
-import org.janelia.saalfeldlab.n5.precomputed.sharding.PrecomputedShardReader;
+import org.janelia.scicomp.n5.precomputed.sharding.PrecomputedShardReader;
 import org.janelia.saalfeldlab.n5.readdata.VolatileReadData;
 
 import com.google.gson.Gson;

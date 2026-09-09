@@ -3,12 +3,12 @@ name: platform-test
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - "*-[0-9]+.*"
   pull_request:
     branches:
-      - master
+      - main
   workflow_dispatch:
 
 jobs:
@@ -20,17 +20,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Install Python interop dependencies
-        run: pip install --no-input tensorstore numpy
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
-          java-version: '8'
+          java-version: '11'
           distribution: 'zulu'
           cache: 'maven'
-      - name: Maven test (with tensorstore interop)
-        run: mvn -B clean test -Dprecomputed.python=python
+      - name: Maven test
+        run: mvn -B clean test

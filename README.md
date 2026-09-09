@@ -54,14 +54,14 @@ the Zarr backend, no axis reversal is performed.
 ![The FlyEM hemibrain volume streamed from Google Cloud Storage and rendered in BigDataViewer](doc/hemibrain-bdv.png)
 
 The interactive example
-[`HemibrainPrecomputed`](src/test/java/org/janelia/saalfeldlab/n5/precomputed/HemibrainPrecomputed.java)
+[`HemibrainPrecomputed`](src/test/java/org/janelia/scicomp/n5/precomputed/HemibrainPrecomputed.java)
 opens the public FlyEM hemibrain EM volume (JPEG + sharded) straight from Google Cloud
 Storage and shows it in BigDataViewer. It builds a multi-resolution source with the scale
 factors, `0.5·(f−1)` half-pixel correction, and `voxel_offset` taken from the `info`:
 
 ```
 mvn test-compile exec:java -Dexec.classpathScope=test \
-  -Dexec.mainClass=org.janelia.saalfeldlab.n5.precomputed.HemibrainPrecomputed
+  -Dexec.mainClass=org.janelia.scicomp.n5.precomputed.HemibrainPrecomputed
 ```
 
 It loads `precomputed://gs://neuroglancer-janelia-flyem-hemibrain/emdata/clahe_yz/jpeg`
@@ -69,7 +69,7 @@ It loads `precomputed://gs://neuroglancer-janelia-flyem-hemibrain/emdata/clahe_y
 
 ## Try it: a deformation field in BigDataViewer
 
-[`WarpFieldPrecomputed`](src/test/java/org/janelia/saalfeldlab/n5/precomputed/WarpFieldPrecomputed.java)
+[`WarpFieldPrecomputed`](src/test/java/org/janelia/scicomp/n5/precomputed/WarpFieldPrecomputed.java)
 opens a public `float32`, 2-channel, sharded (`data_encoding: gzip`) warp / flow field,
 takes its center z-section, and shows each displacement channel as its own lazily-rendered
 2D volatile BDV source (`is2D()`, here colored magenta/green):
@@ -78,7 +78,7 @@ takes its center z-section, and shows each displacement channel as its own lazil
 
 ```
 mvn test-compile exec:java -Dexec.classpathScope=test \
-  -Dexec.mainClass=org.janelia.saalfeldlab.n5.precomputed.WarpFieldPrecomputed
+  -Dexec.mainClass=org.janelia.scicomp.n5.precomputed.WarpFieldPrecomputed
 ```
 
 ## Testing

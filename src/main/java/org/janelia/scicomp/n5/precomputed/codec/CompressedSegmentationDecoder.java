@@ -1,4 +1,4 @@
-package org.janelia.saalfeldlab.n5.precomputed.codec;
+package org.janelia.scicomp.n5.precomputed.codec;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

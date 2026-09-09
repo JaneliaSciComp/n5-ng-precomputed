@@ -1,4 +1,4 @@
-package org.janelia.saalfeldlab.n5.precomputed.sharding;
+package org.janelia.scicomp.n5.precomputed.sharding;
 
 /**
  * MurmurHash3 x86_128 (seed 0), as used by the Neuroglancer sharded format for

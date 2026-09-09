@@ -1,4 +1,4 @@
-package org.janelia.saalfeldlab.n5.precomputed;
+package org.janelia.scicomp.n5.precomputed;
 
 import java.awt.GraphicsEnvironment;
 import java.util.Arrays;
@@ -38,7 +38,7 @@ import net.imglib2.view.Views;
  * Run interactively:
  * <pre>
  * mvn test-compile exec:java -Dexec.classpathScope=test \
- *   -Dexec.mainClass=org.janelia.saalfeldlab.n5.precomputed.WarpFieldPrecomputed
+ *   -Dexec.mainClass=org.janelia.scicomp.n5.precomputed.WarpFieldPrecomputed
  * </pre>
  *
  * @author Stephan Preibisch

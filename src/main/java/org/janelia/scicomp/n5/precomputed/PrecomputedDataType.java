@@ -1,4 +1,4 @@
-package org.janelia.saalfeldlab.n5.precomputed;
+package org.janelia.scicomp.n5.precomputed;
 
 import org.janelia.saalfeldlab.n5.DataType;
 

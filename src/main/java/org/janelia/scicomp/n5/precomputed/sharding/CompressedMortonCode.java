@@ -1,4 +1,4 @@
-package org.janelia.saalfeldlab.n5.precomputed.sharding;
+package org.janelia.scicomp.n5.precomputed.sharding;
 
 /**
  * Computes the Neuroglancer <em>compressed</em> 3D Morton code for a chunk grid

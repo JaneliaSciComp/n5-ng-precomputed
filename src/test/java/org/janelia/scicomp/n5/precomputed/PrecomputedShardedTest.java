@@ -1,4 +1,4 @@
-package org.janelia.saalfeldlab.n5.precomputed;
+package org.janelia.scicomp.n5.precomputed;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -20,9 +20,9 @@ import java.util.zip.GZIPOutputStream;
 import org.janelia.saalfeldlab.n5.DataBlock;
 import org.janelia.saalfeldlab.n5.DataType;
 import org.janelia.saalfeldlab.n5.DatasetAttributes;
-import org.janelia.saalfeldlab.n5.precomputed.PrecomputedTestVolumes.ValueFn;
-import org.janelia.saalfeldlab.n5.precomputed.sharding.CompressedMortonCode;
-import org.janelia.saalfeldlab.n5.precomputed.sharding.MurmurHash3;
+import org.janelia.scicomp.n5.precomputed.PrecomputedTestVolumes.ValueFn;
+import org.janelia.scicomp.n5.precomputed.sharding.CompressedMortonCode;
+import org.janelia.scicomp.n5.precomputed.sharding.MurmurHash3;
 import org.junit.Test;
 
 public class PrecomputedShardedTest {
