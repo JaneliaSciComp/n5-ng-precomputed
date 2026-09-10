@@ -1,14 +1,16 @@
-# n5-ng-precomputed
+# n5-ng-precomputed (prototype)
 
 Read [Neuroglancer precomputed](https://neuroglancer-docs.web.app/datasource/precomputed/volume.html)
 **volumes** through the [N5 API](https://github.com/saalfeldlab/n5) — locally or from any
 cloud backend N5 supports (AWS S3, Google Cloud Storage, …).
 
-**_Claude_** built this as a read-only counterpart to [n5-zarr](https://github.com/saalfeldlab/n5-zarr),
+**Claude** built this as a read-only counterpart to [n5-zarr](https://github.com/saalfeldlab/n5-zarr),
 and closely modeled on it: the precomputed on-disk format is plugged into the same
 `N5Reader` abstraction via a `KeyValueAccess`-based `PrecomputedKeyValueReader` (plus a
 filesystem convenience `N5PrecomputedReader`), so precomputed volumes open with
 `N5Utils`, BigDataViewer, etc., exactly like Zarr and N5.
+
+**NOTE**: This is an early prototype and was not tested beyond a very small set of test examples. It will very likely be rewritten in the future. Use at your own risk.
 
 ## Usage
 
