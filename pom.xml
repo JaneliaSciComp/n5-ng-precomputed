@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>44.0.0</version>
+		<version>45.1.0</version>
 		<relativePath />
 	</parent>
 
@@ -129,7 +129,7 @@
 		</dependency>
 		<dependency>
 			<groupId>sc.fiji</groupId>
-			<artifactId>bigdataviewer-vistools</artifactId>
+			<artifactId>bigdataviewer-core</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
