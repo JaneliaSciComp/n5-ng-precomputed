@@ -11,7 +11,7 @@
 
 	<groupId>org.janelia</groupId>
 	<artifactId>n5-ng-precomputed</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>0.1.1-SNAPSHOT</version>
 
 	<name>N5 NG Precomputed</name>
 	<description>Neuroglancer precomputed volume backend for N5 (read-only)</description>
