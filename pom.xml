@@ -11,7 +11,7 @@
 
 	<groupId>org.janelia</groupId>
 	<artifactId>n5-ng-precomputed</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>0.1.0</version>
 
 	<name>N5 NG Precomputed</name>
 	<description>Neuroglancer precomputed volume backend for N5 (read-only)</description>
@@ -61,7 +61,7 @@
 	<scm>
 		<connection>scm:git:git://github.com/JaneliaSciComp/n5-ng-precomputed</connection>
 		<developerConnection>scm:git:git@github.com:JaneliaSciComp/n5-ng-precomputed</developerConnection>
-		<tag>HEAD</tag>
+		<tag>n5-ng-precomputed-0.1.0</tag>
 		<url>https://github.com/JaneliaSciComp/n5-ng-precomputed</url>
 	</scm>
 	<issueManagement>
