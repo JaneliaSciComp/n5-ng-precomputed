@@ -1,4 +1,4 @@
-package org.janelia.scicomp.n5.precomputed;
+package org.janelia.n5.precomputed;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;

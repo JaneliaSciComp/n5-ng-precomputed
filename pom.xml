@@ -9,7 +9,7 @@
 		<relativePath />
 	</parent>
 
-	<groupId>org.janelia.scicomp</groupId>
+	<groupId>org.janelia</groupId>
 	<artifactId>n5-ng-precomputed</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
 
@@ -74,7 +74,7 @@
 	</ciManagement>
 
 	<properties>
-		<package-name>org.janelia.scicomp.n5.precomputed</package-name>
+		<package-name>org.janelia.n5.precomputed</package-name>
 
 		<license.licenseName>bsd_3</license.licenseName>
 		<license.projectName>N5 NG Precomputed</license.projectName>
